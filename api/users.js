@@ -10,8 +10,8 @@ const auth = require("../middleware/auth");
 
 router.get("/", auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("-passwords");
-    res.json(user);
+    const user = await User.findById(req.user.id).select("-password");
+    return res.json(user);
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
@@ -21,14 +21,12 @@ router.get("/", auth, async (req, res) => {
 router.post(
   "/register",
   [
-    check("name", "Name is required")
-      .not()
-      .isEmpty(),
+    check("name", "Name is required").not().isEmpty(),
     check("email", "Please include a valid email").isEmail(),
     check(
       "password",
       "Please enter a passwrd with more than 6 characters"
-    ).isLength({ min: 6 })
+    ).isLength({ min: 6 }),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -45,14 +43,14 @@ router.post(
       const avatar = gravatar.url(email, {
         s: "200",
         r: "pg",
-        d: "mm"
+        d: "mm",
       });
 
       user = new User({
         name,
         email,
         password,
-        avatar
+        avatar,
       });
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(password, salt);
@@ -60,14 +58,14 @@ router.post(
 
       const payload = {
         user: {
-          id: user.id
-        }
+          id: user.id,
+        },
       };
       jwt.sign(
         payload,
         jwtSecret,
         {
-          expiresIn: 36000000000
+          expiresIn: 36000000000,
         },
         (err, token) => {
           if (err) throw err;
@@ -85,7 +83,7 @@ router.post(
   "/login",
   [
     check("email", "Please include a valid email").isEmail(),
-    check("password", "Password is required").exists()
+    check("password", "Password is required").exists(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -109,14 +107,14 @@ router.post(
 
       const payload = {
         user: {
-          id: user.id
-        }
+          id: user.id,
+        },
       };
       jwt.sign(
         payload,
         jwtSecret,
         {
-          expiresIn: 36000000000
+          expiresIn: 36000000000,
         },
         (err, token) => {
           if (err) throw err;

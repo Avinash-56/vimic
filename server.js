@@ -21,11 +21,12 @@ mongoose
   .connect(db, {
     useNewUrlParser: true,
     useCreateIndex: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    useFindAndModify: false,
   })
   .then(() => console.log("MongoDB Connected"))
-  .catch(err => console.log(err));
+  .catch((err) => console.log(err));
 
 app.use("/api/users", require("./api/users"));
-// app.use("/api/profile", require("./api/profile"));
-// app.use("/api/content", require("./api/content"));
+app.use("/api/profile", require("./api/profile"));
+app.use("/api/posts", require("./api/post"));
