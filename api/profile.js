@@ -3,6 +3,7 @@ const router = express.Router();
 const { check, validationResult } = require("express-validator");
 const User = require("../models/User");
 const Profile = require("../models/Profile");
+const Post = require("../models/Post");
 const jwt = require("jsonwebtoken");
 const auth = require("../middleware/auth");
 const githubClientId = require("../config/keys.js").githubClientId;
@@ -23,12 +24,12 @@ router.get("/me", auth, async (req, res) => {
 });
 
 router.post(
-  "/me",
+  "/",
   [
     auth,
     [
-      check("status", "status is required").not().isEmpty(),
-      check("skills", "skills is required").not().isEmpty(),
+      check("status", "Status is required").not().isEmpty(),
+      check("skills", "Skills is required").not().isEmpty(),
     ],
   ],
   async (req, res) => {
@@ -36,6 +37,8 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
+    console.log("hello");
+
     const {
       facebook,
       youtube,
@@ -60,8 +63,13 @@ router.post(
     if (website) profileFields.website = website;
     if (company) profileFields.company = company;
 
-    if (skills)
-      profileFields.skills = skills.split(",").map((skill) => skill.trim());
+    if (skills) {
+      profileFields.skills = skills
+        .toString()
+        .split(",")
+        .map((skill) => skill.trim());
+    }
+
     if (twitter) profileFields.social.twitter = twitter;
     if (githubusername) profileFields.social.githubusername = githubusername;
 
@@ -137,6 +145,7 @@ router.get("/user/:id", async (req, res) => {
 
 router.delete("/", auth, async (req, res) => {
   try {
+    await Post.deleteMany({ user: req.user.id });
     await Profile.findOneAndDelete({ user: req.user.id });
     await User.findOneAndDelete({ _id: req.user.id });
     res.json({ msg: "User deleted" });
@@ -145,6 +154,7 @@ router.delete("/", auth, async (req, res) => {
     return res.status(500).json("Server Error");
   }
 });
+
 router.put(
   "/experience",
   [
