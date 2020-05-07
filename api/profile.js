@@ -37,7 +37,6 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    console.log("hello");
 
     const {
       facebook,
@@ -71,7 +70,7 @@ router.post(
     }
 
     if (twitter) profileFields.social.twitter = twitter;
-    if (githubusername) profileFields.social.githubusername = githubusername;
+    if (githubusername) profileFields.githubusername = githubusername;
 
     if (instagram) profileFields.social.instagram = instagram;
     if (linkedin) profileFields.social.linkedin = linkedin;
@@ -108,14 +107,16 @@ router.get("/", async (req, res) => {
     res.status(500).send("Server Problem");
   }
 });
+
 router.get("/user/:id", async (req, res) => {
   try {
     const profile = await Profile.findOne({
       user: req.params.id,
     }).populate("user", ["name", "avatar"]);
+
     if (!profile)
       return res.status(400).json({ msg: "No profile for the user" });
-    res.json(profiles);
+    res.json(profile);
   } catch (err) {
     console.error(err.message);
     if ((err.kind = "ObjectId")) {
@@ -284,7 +285,7 @@ router.get("/github/:username", (req, res) => {
       method: "GET",
       headers: { "user-agent": "node.js" },
     };
-    console.log("Hello");
+
     request(options, (error, response, body) => {
       if (error) console.error(error);
       if (response.statusCode != 200) {
